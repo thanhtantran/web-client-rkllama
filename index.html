@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RKLLAMA Client</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .chat-container {
+            width: 40%;
+            max-width: 600px;
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .chat-box {
+            flex-grow: 1;
+            height: 400px;
+            border: none;
+            padding: 10px;
+            overflow-y: auto;
+            background: #252525;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            scrollbar-width: thin;
+        }
+        .chat-box p {
+            background: #333;
+            padding: 10px;
+            border-radius: 8px;
+            max-width: 80%;
+        }
+        .chat-box p strong {
+            display: block;
+            margin-bottom: 5px;
+            color: #0d6efd;
+        }
+        .input-container {
+            display: flex;
+            gap: 10px;
+        }
+        .input-box {
+            flex-grow: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: #333;
+            color: #fff;
+            outline: none;
+        }
+        .send-btn {
+            padding: 12px;
+            border: none;
+            background: #007BFF;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .send-btn:hover {
+            background: #0056b3;
+        }
+        .model-select {
+            padding: 8px;
+            border-radius: 8px;
+            background: #333;
+            color: #fff;
+            border: none;
+            outline: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <h2>RKLLAMA Client</h2>
+        <select id="model" class="model-select">
+            <option value="Test">model1</option>
+        </select>
+        <div class="chat-box" id="chat-box">
+            <p><strong>Bot:</strong> Premier message</p>
+        </div>
+        <div class="input-container">
+            <input type="text" id="user-input" class="input-box" placeholder="Tapez votre message...">
+            <button type="submit" class="send-btn" onclick="sendMessage()">▶</button>
+        </div>
+    </div>
+
+    <script>
+        function sendMessage() {
+            let userInput = document.getElementById("user-input").value;
+            let chatBox = document.getElementById("chat-box");
+            let model = document.getElementById("model").value;
+            
+            if (userInput.trim() !== "") {
+                chatBox.innerHTML += `<p><strong>Vous:</strong> ${userInput}</p>`;
+                chatBox.innerHTML += `<p><strong>Bot (${model}):</strong> Réponse générée...</p>`;
+                document.getElementById("user-input").value = "";
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+        }
+    </script>
+</body>
+</html>
