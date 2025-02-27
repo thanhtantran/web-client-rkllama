@@ -88,9 +88,7 @@
 <body>
     <div class="chat-container">
         <h2>RKLLAMA Client</h2>
-        <select id="model" class="model-select">
-            <option value="Test">model1</option>
-        </select>
+        <select id="model" class="model-select"></select>
         <div class="chat-box" id="chat-box">
             <p><strong>Bot:</strong> Premier message</p>
         </div>
@@ -101,9 +99,16 @@
     </div>
 
     <script>
+        const models = document.getElementById('model');
+
         fetch("http://localhost:8080/models").then(res => {
             res.json().then(a => {
                 console.log(a)
+                if (!a.models) return;
+                
+                a.models.forEach(r => {
+                    models.innerHTML += `<option value="${r}">${r}</option>`;
+                })
             })
         })
     </script>

@@ -12,7 +12,7 @@ app.use(express.json());
 let currentModel = null;
 
 // Liste simulée de modèles disponibles
-const dummyModels = ['model1', 'model2', 'model3'];
+const dummyModels = ['Llama3.2', 'Qwen2.5', 'Grok'];
 
 // Route pour lister les modèles
 app.get('/models', (req, res) => {
