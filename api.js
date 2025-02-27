@@ -1,6 +1,9 @@
 const express = require('express');
 const app = express();
 const path = require('path');
+const cors = require('cors');
+
+app.use(cors())
 
 // Middleware pour parser le JSON
 app.use(express.json());
