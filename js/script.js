@@ -216,7 +216,7 @@ async function sendMessage() {
             try {
                 const jsonChunk = JSON.parse(chunk);
                 console.log(jsonChunk)
-                assistantMessage += jsonChunk.response;
+                assistantMessage += jsonChunk.choices[0].content;
                 contentSpan.textContent = assistantMessage;
                 chatBox.scrollTop = chatBox.scrollHeight;
             } catch (e) {
