@@ -15,6 +15,9 @@ Le rkllama Web Client offre une interface web conviviale pour rkllama, optimisé
 
 
 ---
+![Image](./src/images/Screenshot%20from%202025-02-27%2023-30-18.png)
+![Image](./src/images/Screenshot%20from%202025-02-27%2023-30-25.png)
+![Image](./src/images/Screenshot%20from%202025-02-27%2023-30-55.png)
 
 <video width="320" height="240" controls>
   <source src="./src/images/Screencast%20from%202025-02-27%2022-43-01.webm" type="video/mp4">
