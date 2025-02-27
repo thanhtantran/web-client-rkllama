@@ -41,6 +41,7 @@ Le rkllama Web Client offre une interface web conviviale pour rkllama, optimisé
 2. Installer rkllama ( documentation: https://github.com/NotPunchnox/rkllama)
 
 **Remarque** : Une version Docker de rkllama existe.
+
 ---
 
 ## Lancer le serveur web rkllama
@@ -76,4 +77,4 @@ Contributions bienvenues ! Forkez le dépôt, faites vos modifications, et soume
 
 ## Licence
 
-Sous licence GLP. Consultez [LICENSE](LICENSE) pour plus d’informations.
+Sous licence GPL. Consultez [LICENSE](LICENSE) pour plus d’informations.
