@@ -5,15 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RKLLAMA Client</title>
     <link rel="icon" href="logo.jpg">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #4a90e2;
             --secondary: #2ecc71;
-            --background: #2c3e50;
-            --card-bg: #34495e;
+            --background: #1a2634;
+            --card-bg: #2c3e50;
             --text: #ecf0f1;
             --accent: #e74c3c;
             --hover: #357abd;
+            --shadow: rgba(0, 0, 0, 0.3);
         }
 
         * {
@@ -23,80 +25,96 @@
         }
 
         body {
-            font-family: 'Roboto', Arial, sans-serif;
-            background: var(--background);
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, var(--background), #233042);
             color: var(--text);
             min-height: 100vh;
-            padding: 20px;
+            padding: 30px;
             display: flex;
             justify-content: center;
+            align-items: flex-start;
         }
 
         .container {
             width: 100%;
-            max-width: 1000px;
+            max-width: 1100px;
             background: var(--card-bg);
-            border-radius: 15px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px var(--shadow);
             overflow: hidden;
+            transition: all 0.3s ease;
         }
 
         .tabs {
             display: flex;
-            background: #22313f;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            background: #1f2d3d;
+            border-bottom: 2px solid var(--primary);
         }
 
         .tab {
             flex: 1;
-            padding: 15px;
+            padding: 18px;
             text-align: center;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.4s ease;
             font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .tab:hover {
-            background: rgba(255,255,255,0.1);
+            background: rgba(74, 144, 226, 0.1);
         }
 
         .tab.active {
             background: var(--primary);
             color: white;
+            box-shadow: inset 0 -3px 0 var(--hover);
         }
 
         .tab-content {
-            padding: 25px;
+            padding: 30px;
             display: none;
+            animation: slideIn 0.5s ease;
         }
 
         .tab-content.active {
             display: block;
         }
 
+        h2 {
+            color: var(--primary);
+            margin-bottom: 25px;
+            font-size: 1.8em;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
         .chat-container, .download-container, .conversations-container {
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 25px;
         }
 
         .chat-box, .conversations-list {
-            height: 500px;
-            padding: 15px;
+            height: 550px;
+            padding: 20px;
             overflow-y: auto;
-            border-radius: 10px;
-            background: #2c3e50;
+            border-radius: 15px;
+            background: #233042;
+            box-shadow: inset 0 2px 10px var(--shadow);
             scrollbar-width: thin;
             scrollbar-color: var(--primary) var(--card-bg);
         }
 
         .message {
-            margin: 10px 0;
-            padding: 12px;
-            border-radius: 8px;
-            background: #3d556b;
-            max-width: 80%;
-            animation: fadeIn 0.3s ease;
+            margin: 12px 0;
+            padding: 15px;
+            border-radius: 10px;
+            background: #34495e;
+            max-width: 85%;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px var(--shadow);
         }
 
         .message.user {
@@ -108,36 +126,42 @@
         .message strong {
             color: var(--secondary);
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
+            font-weight: 500;
         }
 
         .input-container {
             display: flex;
-            gap: 10px;
+            gap: 15px;
+            align-items: center;
         }
 
         .input-box {
             flex-grow: 1;
-            padding: 12px 15px;
+            padding: 15px 20px;
             border: none;
-            border-radius: 8px;
-            background: #3d556b;
+            border-radius: 10px;
+            background: #34495e;
             color: var(--text);
             outline: none;
             transition: all 0.3s ease;
+            font-size: 1em;
         }
 
         .input-box:focus {
-            box-shadow: 0 0 5px var(--primary);
+            box-shadow: 0 0 8px var(--primary);
+            background: #3d556b;
         }
 
         .btn {
-            padding: 12px 20px;
+            padding: 15px 25px;
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             cursor: pointer;
             transition: all 0.3s ease;
             font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .send-btn {
@@ -147,6 +171,7 @@
 
         .send-btn:hover {
             background: #27ae60;
+            transform: translateY(-2px);
         }
 
         .download-btn {
@@ -156,45 +181,78 @@
 
         .download-btn:hover {
             background: var(--hover);
+            transform: translateY(-2px);
         }
 
         .select {
-            padding: 10px;
-            border-radius: 8px;
-            background: #3d556b;
+            padding: 12px 15px;
+            border-radius: 10px;
+            background: #34495e;
             color: var(--text);
             border: none;
             outline: none;
             cursor: pointer;
+            width: 100%;
+            max-width: 300px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .select:hover {
+            background: #3d556b;
         }
 
         .form-group {
             display: flex;
             flex-direction: column;
-            gap: 5px;
-            margin-bottom: 15px;
+            gap: 8px;
+            margin-bottom: 20px;
         }
 
         .form-group label {
-            font-size: 0.9em;
-            opacity: 0.8;
+            font-size: 0.95em;
+            font-weight: 500;
+            opacity: 0.9;
+            color: var(--primary);
         }
 
         .conversations-list .conversation {
-            padding: 10px;
-            background: #3d556b;
-            margin: 5px 0;
-            border-radius: 8px;
+            padding: 15px;
+            background: #34495e;
+            margin: 8px 0;
+            border-radius: 10px;
             cursor: pointer;
             transition: all 0.3s ease;
+            box-shadow: 0 2px 8px var(--shadow);
         }
 
         .conversations-list .conversation:hover {
             background: var(--primary);
+            transform: translateX(5px);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #34495e;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--secondary);
+            transition: width 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
+            from { opacity: 0; transform: translateY(15px); }
             to { opacity: 1; transform: translateY(0); }
         }
     </style>
@@ -208,7 +266,7 @@
         </div>
 
         <div id="chat" class="tab-content chat-container active">
-            <h2 style="color: var(--primary)">RKLLAMA Chat</h2>
+            <h2>RKLLAMA Chat</h2>
             <select id="model" class="select" onchange="ChangeModel()"></select>
             <div class="chat-box" id="chat-box">
                 <div class="message"><strong>Bot:</strong> Welcome to RKLLAMA!</div>
@@ -220,24 +278,29 @@
         </div>
 
         <div id="download" class="tab-content download-container">
-            <h2 style="color: var(--primary)">Download Model</h2>
+            <h2>Download Model</h2>
             <div class="form-group">
                 <label>Model Path (e.g., username/repo/model.rkllm)</label>
                 <input type="text" id="model-path" class="input-box" placeholder="Enter model path">
             </div>
             <div class="form-group">
-                <label>Temperature (optional)</label>
-                <input type="number" id="temperature" class="input-box" value="1.0" step="0.1" min="0">
+                <label>Temperature (0 to 2)</label>
+                <input type="number" id="temperature" class="input-box" value="1.0" step="0.1" min="0" max="2">
             </div>
             <div class="form-group">
                 <label>System Prompt (optional)</label>
                 <input type="text" id="system-prompt" class="input-box" placeholder="Enter system prompt">
             </div>
             <button class="btn download-btn" onclick="downloadModel()">Download & Load</button>
+            <div id="progress-container" style="display: none;">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill" style="width: 0%;"></div>
+                </div>
+            </div>
         </div>
 
         <div id="conversations" class="tab-content conversations-container">
-            <h2 style="color: var(--primary)">Saved Conversations</h2>
+            <h2>Saved Conversations</h2>
             <div class="conversations-list" id="conversations-list">
                 <!-- Conversations will be loaded here -->
             </div>
@@ -258,9 +321,11 @@
         }
 
         // Load models
-        fetch(API_URL + 'models')
-            .then(res => res.json())
-            .then(data => {
+        async function loadModels() {
+            try {
+                const res = await fetch(API_URL + 'models');
+                if (!res.ok) throw new Error('Failed to fetch models');
+                const data = await res.json();
                 const models = document.getElementById('model');
                 models.innerHTML = '<option value="">Select a model</option>';
                 if (data.models) {
@@ -268,33 +333,36 @@
                         models.innerHTML += `<option value="${r}">${r}</option>`;
                     });
                 }
-            })
-            .catch(err => console.error('Error loading models:', err));
+            } catch (err) {
+                console.error('Error loading models:', err);
+                document.getElementById('chat-box').innerHTML += 
+                    `<div class="message"><strong>Error:</strong> Could not load models: ${err.message}</div>`;
+            }
+        }
 
         // Change model
-        function ChangeModel() {
+        async function ChangeModel() {
             const modelName = document.getElementById('model').value;
             if (!modelName) return;
 
-            fetch(API_URL + 'load_model', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ model_name: modelName })
-            })
-            .then(response => {
-                if (response.ok) {
-                    alert(`${modelName} is loaded successfully!`);
-                } else {
-                    response.json().then(data => {
-                        if (data.error.includes('already loaded')) {
-                            unloadModel().then(() => ChangeModel());
-                        } else {
-                            alert(`Error: ${data.error}`);
-                        }
-                    });
+            try {
+                const response = await fetch(API_URL + 'load_model', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ model_name: modelName })
+                });
+                const data = await response.json();
+                if (!response.ok) {
+                    if (data.error.includes('already loaded')) {
+                        await unloadModel();
+                        return ChangeModel();
+                    }
+                    throw new Error(data.error);
                 }
-            })
-            .catch(err => console.error('Error loading model:', err));
+                alert(`${modelName} loaded successfully!`);
+            } catch (err) {
+                alert(`Error loading model: ${err.message}`);
+            }
         }
 
         // Unload model
@@ -311,7 +379,10 @@
             const chatBox = document.getElementById('chat-box');
             const model = document.getElementById('model').value;
 
-            if (!userInput || !model) return;
+            if (!userInput || !model) {
+                alert('Please select a model and enter a message');
+                return;
+            }
 
             chatBox.innerHTML += `<div class="message user"><strong>You:</strong> ${userInput}</div>`;
             HISTORY.push({ role: 'user', content: userInput });
@@ -350,7 +421,7 @@
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        // Download model
+        // Download model with progress
         async function downloadModel() {
             const modelPath = document.getElementById('model-path').value.trim();
             const temperature = document.getElementById('temperature').value;
@@ -362,7 +433,12 @@
             }
 
             const chatBox = document.getElementById('chat-box');
+            const progressContainer = document.getElementById('progress-container');
+            const progressFill = document.getElementById('progress-fill');
+
             chatBox.innerHTML += `<div class="message"><strong>System:</strong> Downloading ${modelPath}...</div>`;
+            progressContainer.style.display = 'block';
+            progressFill.style.width = '0%';
 
             try {
                 const pullResponse = await fetch(API_URL + 'pull', {
@@ -371,18 +447,20 @@
                     body: JSON.stringify({ model: modelPath })
                 });
 
+                if (!pullResponse.ok) throw new Error((await pullResponse.json()).error);
+
                 const reader = pullResponse.body.getReader();
                 const decoder = new TextDecoder();
-                let progress = '';
-                const progressEl = chatBox.lastElementChild;
 
-                while (true) {
-                    const { done, value } = await reader.read();
-                    if (done) break;
-                    progress += decoder.decode(value);
-                    progressEl.innerHTML = `<strong>System:</strong> Downloading ${modelPath}... ${progress}`;
-                    chatBox.scrollTop = chatBox.scrollHeight;
-                }
+                await readStream(reader, decoder, (chunk) => {
+                    const percentage = parseFloat(chunk.trim());
+                    if (!isNaN(percentage)) {
+                        progressFill.style.width = `${percentage}%`;
+                        chatBox.lastElementChild.innerHTML = 
+                            `<strong>System:</strong> Downloading ${modelPath}... ${percentage}%`;
+                        chatBox.scrollTop = chatBox.scrollHeight;
+                    }
+                });
 
                 const modelName = modelPath.split('/').pop().replace('.rkllm', '');
                 const loadPayload = { 
@@ -400,9 +478,11 @@
                 if (!loadResponse.ok) throw new Error((await loadResponse.json()).error);
 
                 alert(`${modelName} downloaded and loaded successfully!`);
-                location.reload(); // Refresh to update model list
+                progressContainer.style.display = 'none';
+                location.reload();
             } catch (error) {
                 chatBox.innerHTML += `<div class="message"><strong>Error:</strong> ${error.message}</div>`;
+                progressContainer.style.display = 'none';
             }
             chatBox.scrollTop = chatBox.scrollHeight;
         }
@@ -426,7 +506,7 @@
             Object.entries(conversations).forEach(([id, conv]) => {
                 list.innerHTML += `
                     <div class="conversation" onclick="loadConversation('${id}')">
-                        ${conv.timestamp} - Model: ${conv.model} (${conv.messages.length} messages)
+                        ${conv.timestamp} - <strong>Model:</strong> ${conv.model} (${conv.messages.length} messages)
                     </div>`;
             });
         }
@@ -458,12 +538,13 @@
                 const chunk = decoder.decode(value, { stream: true });
                 const lines = chunk.split('\n');
                 for (const line of lines) {
-                    if (line.trim()) onChunk(line + ' ');
+                    if (line.trim()) onChunk(line);
                 }
             }
         }
 
         // Initial load
+        loadModels();
         loadConversations();
     </script>
 </body>
