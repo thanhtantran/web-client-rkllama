@@ -22,6 +22,7 @@
 }
 
 body {
+    background-color: var(--background);
     font-family: 'Inter', sans-serif;
     color: var(--text);
     min-height: 100vh;
@@ -185,7 +186,7 @@ h2 {
 }
 
 .message strong {
-    color: var(--primary-light);
+    color: white;
     display: block;
     margin-bottom: 8px;
     font-weight: 600;
