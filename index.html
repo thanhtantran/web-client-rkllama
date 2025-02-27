@@ -1,123 +1,280 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RKLLAMA Client</title>
     <link rel="icon" href="logo.jpg">
     <style>
+        :root {
+            --primary: #4a90e2;
+            --secondary: #2ecc71;
+            --background: #2c3e50;
+            --card-bg: #34495e;
+            --text: #ecf0f1;
+            --accent: #e74c3c;
+            --hover: #357abd;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            background-color: #1e1e1e;
-            color: #ffffff;
+            font-family: 'Roboto', Arial, sans-serif;
+            background: var(--background);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 20px;
             display: flex;
             justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
         }
-        .chat-container {
+
+        .container {
             width: 100%;
-            padding: 20px;
-            border-radius: 12px;
+            max-width: 1000px;
+            background: var(--card-bg);
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .tabs {
+            display: flex;
+            background: #22313f;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .tab:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .tab.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .tab-content {
+            padding: 25px;
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .chat-container, .download-container, .conversations-container {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 20px;
         }
-        .chat-box {
-            flex-grow: 1;
-            height: 400px;
-            border: none;
-            padding: 10px;
+
+        .chat-box, .conversations-list {
+            height: 500px;
+            padding: 15px;
             overflow-y: auto;
-            background: #252525;
-            border-radius: 8px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
+            border-radius: 10px;
+            background: #2c3e50;
             scrollbar-width: thin;
+            scrollbar-color: var(--primary) var(--card-bg);
         }
-        .chat-box p {
-            background: #333;
-            padding: 10px;
+
+        .message {
+            margin: 10px 0;
+            padding: 12px;
             border-radius: 8px;
+            background: #3d556b;
             max-width: 80%;
+            animation: fadeIn 0.3s ease;
         }
-        .chat-box p strong {
+
+        .message.user {
+            background: var(--primary);
+            align-self: flex-end;
+            margin-left: auto;
+        }
+
+        .message strong {
+            color: var(--secondary);
             display: block;
             margin-bottom: 5px;
-            color: #0d6efd;
         }
+
         .input-container {
             display: flex;
             gap: 10px;
         }
+
         .input-box {
             flex-grow: 1;
-            padding: 12px;
+            padding: 12px 15px;
             border: none;
             border-radius: 8px;
-            background: #333;
-            color: #fff;
+            background: #3d556b;
+            color: var(--text);
             outline: none;
+            transition: all 0.3s ease;
         }
-        .send-btn {
-            padding: 12px;
+
+        .input-box:focus {
+            box-shadow: 0 0 5px var(--primary);
+        }
+
+        .btn {
+            padding: 12px 20px;
             border: none;
-            background: #007BFF;
-            color: white;
             border-radius: 8px;
             cursor: pointer;
-            transition: background 0.3s;
+            transition: all 0.3s ease;
+            font-weight: 500;
         }
+
+        .send-btn {
+            background: var(--secondary);
+            color: white;
+        }
+
         .send-btn:hover {
-            background: #0056b3;
+            background: #27ae60;
         }
-        .model-select {
-            padding: 8px;
+
+        .download-btn {
+            background: var(--primary);
+            color: white;
+        }
+
+        .download-btn:hover {
+            background: var(--hover);
+        }
+
+        .select {
+            padding: 10px;
             border-radius: 8px;
-            background: #333;
-            color: #fff;
+            background: #3d556b;
+            color: var(--text);
             border: none;
             outline: none;
+            cursor: pointer;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .conversations-list .conversation {
+            padding: 10px;
+            background: #3d556b;
+            margin: 5px 0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .conversations-list .conversation:hover {
+            background: var(--primary);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
 <body>
-    <div class="chat-container">
-        <h2>RKLLAMA Client</h2>
-        <select id="model" class="model-select" onchange="ChangeModel()"></select>
-
-        <div class="chat-box" id="chat-box">
-            <p><strong>Bot:</strong> Premier message</p>
+    <div class="container">
+        <div class="tabs">
+            <div class="tab active" onclick="showTab('chat')">Chat</div>
+            <div class="tab" onclick="showTab('download')">Download Model</div>
+            <div class="tab" onclick="showTab('conversations')">Conversations</div>
         </div>
-        <div class="input-container">
-            <input type="text" id="user-input" class="input-box" placeholder="Tapez votre message...">
-            <button type="submit" class="send-btn" onclick="sendMessage()">▶</button>
+
+        <div id="chat" class="tab-content chat-container active">
+            <h2 style="color: var(--primary)">RKLLAMA Chat</h2>
+            <select id="model" class="select" onchange="ChangeModel()"></select>
+            <div class="chat-box" id="chat-box">
+                <div class="message"><strong>Bot:</strong> Welcome to RKLLAMA!</div>
+            </div>
+            <div class="input-container">
+                <input type="text" id="user-input" class="input-box" placeholder="Type your message...">
+                <button class="btn send-btn" onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+
+        <div id="download" class="tab-content download-container">
+            <h2 style="color: var(--primary)">Download Model</h2>
+            <div class="form-group">
+                <label>Model Path (e.g., username/repo/model.rkllm)</label>
+                <input type="text" id="model-path" class="input-box" placeholder="Enter model path">
+            </div>
+            <div class="form-group">
+                <label>Temperature (optional)</label>
+                <input type="number" id="temperature" class="input-box" value="1.0" step="0.1" min="0">
+            </div>
+            <div class="form-group">
+                <label>System Prompt (optional)</label>
+                <input type="text" id="system-prompt" class="input-box" placeholder="Enter system prompt">
+            </div>
+            <button class="btn download-btn" onclick="downloadModel()">Download & Load</button>
+        </div>
+
+        <div id="conversations" class="tab-content conversations-container">
+            <h2 style="color: var(--primary)">Saved Conversations</h2>
+            <div class="conversations-list" id="conversations-list">
+                <!-- Conversations will be loaded here -->
+            </div>
         </div>
     </div>
 
     <script>
         const API_URL = 'http://localhost:8080/';
         let HISTORY = [];
+        let currentConversationId = Date.now();
 
-        // Charger les modèles dans le menu déroulant
+        // Tab management
+        function showTab(tabId) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.querySelector(`.tab[onclick="showTab('${tabId}')"]`).classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        // Load models
         fetch(API_URL + 'models')
             .then(res => res.json())
             .then(data => {
-                if (!data.models) return;
                 const models = document.getElementById('model');
-                models.innerHTML = ''; // Réinitialiser le menu
-                data.models.forEach(r => {
-                    models.innerHTML += `<option value="${r}">${r}</option>`;
-                });
+                models.innerHTML = '<option value="">Select a model</option>';
+                if (data.models) {
+                    data.models.forEach(r => {
+                        models.innerHTML += `<option value="${r}">${r}</option>`;
+                    });
+                }
             })
-            .catch(err => console.error('Erreur lors du chargement des modèles:', err));
+            .catch(err => console.error('Error loading models:', err));
 
-        // Fonction pour gérer le changement de modèle
+        // Change model
         function ChangeModel() {
-            const menu = document.getElementById('model');
-            const modelName = menu.value;
+            const modelName = document.getElementById('model').value;
+            if (!modelName) return;
 
             fetch(API_URL + 'load_model', {
                 method: 'POST',
@@ -130,41 +287,35 @@
                 } else {
                     response.json().then(data => {
                         if (data.error.includes('already loaded')) {
-                            unloadModel().then(() => ChangeModel()); // Décharger et recharger
+                            unloadModel().then(() => ChangeModel());
                         } else {
-                            alert(`Erreur: ${data.error}`);
+                            alert(`Error: ${data.error}`);
                         }
                     });
                 }
             })
-            .catch(err => console.error('Erreur lors du chargement du modèle:', err));
+            .catch(err => console.error('Error loading model:', err));
         }
 
-        // Fonction pour décharger un modèle
+        // Unload model
         async function unloadModel() {
-            try {
-                const response = await fetch(API_URL + 'unload_model', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                console.log('Résultat unload model:', response.status);
-            } catch (err) {
-                console.error('Erreur lors du déchargement:', err);
-            }
+            await fetch(API_URL + 'unload_model', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
         }
 
-        // Fonction pour envoyer un message avec streaming
+        // Send message
         async function sendMessage() {
             const userInput = document.getElementById('user-input').value.trim();
             const chatBox = document.getElementById('chat-box');
             const model = document.getElementById('model').value;
 
-            if (!userInput) return;
+            if (!userInput || !model) return;
 
-            // Ajouter le message utilisateur à l'interface et à l'historique
-            chatBox.innerHTML += `<p><strong>Vous:</strong> ${userInput}</p>`;
+            chatBox.innerHTML += `<div class="message user"><strong>You:</strong> ${userInput}</div>`;
             HISTORY.push({ role: 'user', content: userInput });
-            document.getElementById('user-input').value = ''; // Vider l'input
+            document.getElementById('user-input').value = '';
 
             const payload = { messages: HISTORY, stream: true };
 
@@ -175,63 +326,145 @@
                     body: JSON.stringify(payload)
                 });
 
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    chatBox.innerHTML += `<p><strong>Erreur:</strong> ${errorData.error}</p>`;
-                    chatBox.scrollTop = chatBox.scrollHeight;
-                    return;
-                }
+                if (!response.ok) throw new Error((await response.json()).error);
 
-                // Gestion du streaming
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder('utf-8');
                 let assistantMessage = '';
-                let messageElement = null;
-
-                // Ajouter un élément temporaire pour la réponse en streaming
-                chatBox.innerHTML += `<p><strong>Bot (${model}):</strong> <span id="streaming-response"></span></p>`;
-                messageElement = document.getElementById('streaming-response');
+                chatBox.innerHTML += `<div class="message"><strong>Bot (${model}):</strong> <span id="streaming-response"></span></div>`;
+                const messageElement = document.getElementById('streaming-response');
 
                 await readStream(reader, decoder, (chunk) => {
-                    try {
-                        const jsonChunk = JSON.parse(chunk);
-                        const contentChunk = jsonChunk.response; // Adapté à l'API simulée
-                        assistantMessage += contentChunk;
-                        messageElement.textContent = assistantMessage; // Mise à jour en temps réel
-                        chatBox.scrollTop = chatBox.scrollHeight;
-                    } catch (error) {
-                        console.error('Erreur lors du parsing JSON:', error);
-                    }
+                    const jsonChunk = JSON.parse(chunk);
+                    assistantMessage += jsonChunk.response;
+                    messageElement.textContent = assistantMessage;
+                    chatBox.scrollTop = chatBox.scrollHeight;
                 });
 
-                // Finaliser le message dans l'historique
                 HISTORY.push({ role: 'assistant', content: assistantMessage });
-                messageElement.id = ''; // Supprimer l'ID temporaire
-
+                messageElement.parentElement.innerHTML = `<strong>Bot (${model}):</strong> ${assistantMessage}`;
+                saveConversation();
             } catch (error) {
-                chatBox.innerHTML += `<p><strong>Erreur:</strong> Problème de connexion à l'API</p>`;
-                console.error('Erreur lors de la requête:', error);
+                chatBox.innerHTML += `<div class="message"><strong>Error:</strong> ${error.message}</div>`;
             }
-
-            chatBox.scrollTop = chatBox.scrollHeight; // Scroll en bas
+            chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        // Fonction utilitaire pour lire le stream
+        // Download model
+        async function downloadModel() {
+            const modelPath = document.getElementById('model-path').value.trim();
+            const temperature = document.getElementById('temperature').value;
+            const systemPrompt = document.getElementById('system-prompt').value;
+
+            if (!modelPath) {
+                alert('Please enter a model path');
+                return;
+            }
+
+            const chatBox = document.getElementById('chat-box');
+            chatBox.innerHTML += `<div class="message"><strong>System:</strong> Downloading ${modelPath}...</div>`;
+
+            try {
+                const pullResponse = await fetch(API_URL + 'pull', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ model: modelPath })
+                });
+
+                const reader = pullResponse.body.getReader();
+                const decoder = new TextDecoder();
+                let progress = '';
+                const progressEl = chatBox.lastElementChild;
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    progress += decoder.decode(value);
+                    progressEl.innerHTML = `<strong>System:</strong> Downloading ${modelPath}... ${progress}`;
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                }
+
+                const modelName = modelPath.split('/').pop().replace('.rkllm', '');
+                const loadPayload = { 
+                    model_name: modelName,
+                    temperature: parseFloat(temperature),
+                };
+                if (systemPrompt) loadPayload.system = systemPrompt;
+
+                const loadResponse = await fetch(API_URL + 'load_model', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(loadPayload)
+                });
+
+                if (!loadResponse.ok) throw new Error((await loadResponse.json()).error);
+
+                alert(`${modelName} downloaded and loaded successfully!`);
+                location.reload(); // Refresh to update model list
+            } catch (error) {
+                chatBox.innerHTML += `<div class="message"><strong>Error:</strong> ${error.message}</div>`;
+            }
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // Conversation management
+        function saveConversation() {
+            const conversations = JSON.parse(localStorage.getItem('rkllama_conversations') || '{}');
+            conversations[currentConversationId] = {
+                timestamp: new Date().toLocaleString(),
+                messages: HISTORY,
+                model: document.getElementById('model').value
+            };
+            localStorage.setItem('rkllama_conversations', JSON.stringify(conversations));
+            loadConversations();
+        }
+
+        function loadConversations() {
+            const conversations = JSON.parse(localStorage.getItem('rkllama_conversations') || '{}');
+            const list = document.getElementById('conversations-list');
+            list.innerHTML = '';
+            Object.entries(conversations).forEach(([id, conv]) => {
+                list.innerHTML += `
+                    <div class="conversation" onclick="loadConversation('${id}')">
+                        ${conv.timestamp} - Model: ${conv.model} (${conv.messages.length} messages)
+                    </div>`;
+            });
+        }
+
+        function loadConversation(id) {
+            const conversations = JSON.parse(localStorage.getItem('rkllama_conversations') || '{}');
+            const conv = conversations[id];
+            if (!conv) return;
+
+            currentConversationId = id;
+            HISTORY = conv.messages;
+            const chatBox = document.getElementById('chat-box');
+            chatBox.innerHTML = '';
+            conv.messages.forEach(msg => {
+                chatBox.innerHTML += `<div class="message ${msg.role === 'user' ? 'user' : ''}">
+                    <strong>${msg.role === 'user' ? 'You' : `Bot (${conv.model})`}:</strong> ${msg.content}
+                </div>`;
+            });
+            document.getElementById('model').value = conv.model;
+            showTab('chat');
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // Stream reader
         async function readStream(reader, decoder, onChunk) {
             while (true) {
                 const { done, value } = await reader.read();
                 if (done) break;
-
                 const chunk = decoder.decode(value, { stream: true });
                 const lines = chunk.split('\n');
-
                 for (const line of lines) {
-                    if (line.trim()) {
-                        onChunk(line + ' ');
-                    }
+                    if (line.trim()) onChunk(line + ' ');
                 }
             }
         }
+
+        // Initial load
+        loadConversations();
     </script>
 </body>
 </html>
