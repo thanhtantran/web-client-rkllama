@@ -77,4 +77,4 @@ Contributions bienvenues ! Forkez le dépôt, faites vos modifications, et soume
 
 ## Licence
 
-Sous licence GPL. Consultez [LICENSE](LICENSE) pour plus d’informations.
+Sous licence Apache2. Consultez [LICENSE](LICENSE) pour plus d’informations.
