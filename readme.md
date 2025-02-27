@@ -16,10 +16,10 @@ Le rkllama Web Client offre une interface web conviviale pour rkllama, optimisé
 
 ---
 
-
-<video controls width="640" height="360">
-  <source src="./src/images/Screencast from 2025-02-27 22-43-01.webm" type="video/mp4">
+<video width="320" height="240" controls>
+  <source src="./src/images/Screencast%20from%202025-02-27%2022-43-01.webm" type="video/mp4">
 </video>
+
 
 ## Prérequis
 
