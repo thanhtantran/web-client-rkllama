@@ -1,3 +1,5 @@
+// Generate by Grok
+
 const express = require('express');
 const app = express();
 const path = require('path');
@@ -87,10 +89,50 @@ app.post('/generate', (req, res) => {
     if (!currentModel) {
         return res.status(400).json({ error: 'No models are currently loaded.' });
     }
-    const dummyResponse = `This is a dummy response from ${currentModel}.`;
-    res.status(200).json({ response: dummyResponse });
-});
 
+    const { messages, stream } = req.body;
+
+    if (!messages || !Array.isArray(messages)) {
+        return res.status(400).json({ error: 'Messages must be provided as an array.' });
+    }
+
+    // Générer une réponse basée sur le dernier message utilisateur
+    const lastUserMessage = messages.filter(m => m.role === 'user').pop()?.content || 'No input';
+    const dummyResponse = `This is a dummy response from ${currentModel} to: "${lastUserMessage}".`;
+    const responseChunks = dummyResponse.split(' '); // Diviser en morceaux pour simuler le streaming
+
+    // Métadonnées simulées
+    const usage = {
+        tokens_per_second: Math.floor(Math.random() * 50) + 50, // Entre 50 et 100
+        completion_tokens: dummyResponse.split(' ').length
+    };
+
+    if (stream) {
+        // Mode streaming
+        res.setHeader('Content-Type', 'text/plain');
+
+        let index = 0;
+        const streamInterval = setInterval(() => {
+            if (index < responseChunks.length) {
+                const chunk = {
+                    response: responseChunks[index] + ' ', // Structure adaptée au client
+                    usage: index === responseChunks.length - 1 ? usage : { tokens_per_second: 0, completion_tokens: 0 }
+                };
+                res.write(JSON.stringify(chunk) + '\n');
+                index++;
+            } else {
+                clearInterval(streamInterval);
+                res.end();
+            }
+        }, 200); // Délai de 200ms entre chaque mot pour simuler une génération progressive
+    } else {
+        // Mode non-streaming
+        res.status(200).json({
+            response: dummyResponse,
+            usage
+        });
+    }
+});
 // Route par défaut
 app.get('/api/', (req, res) => {
     res.status(200).json({

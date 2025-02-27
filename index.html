@@ -18,10 +18,8 @@
         }
         .chat-container {
             width: 100%;
-            max-width: 600px;
             padding: 20px;
             border-radius: 12px;
-            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.5);
             display: flex;
             flex-direction: column;
             gap: 10px;
@@ -100,60 +98,139 @@
     </div>
 
     <script>
-        const models = document.getElementById('model');
+        const API_URL = 'http://localhost:8080/';
+        let HISTORY = [];
 
-        fetch("http://localhost:8080/models").then(res => {
-            res.json().then(a => {
-                console.log(a)
-                if (!a.models) return;
-                
-
-                a.models.forEach(r => {
+        // Charger les modèles dans le menu déroulant
+        fetch(API_URL + 'models')
+            .then(res => res.json())
+            .then(data => {
+                if (!data.models) return;
+                const models = document.getElementById('model');
+                models.innerHTML = ''; // Réinitialiser le menu
+                data.models.forEach(r => {
                     models.innerHTML += `<option value="${r}">${r}</option>`;
-                })
+                });
             })
-        })
-    </script>
+            .catch(err => console.error('Erreur lors du chargement des modèles:', err));
 
-    <script>
-        function sendMessage() {
-            let userInput = document.getElementById("user-input").value;
-            let chatBox = document.getElementById("chat-box");
-            let model = document.getElementById("model").value;
+        // Fonction pour gérer le changement de modèle
+        function ChangeModel() {
+            const menu = document.getElementById('model');
+            const modelName = menu.value;
 
-            fetch("/generate")
-            
-            if (userInput.trim() !== "") {
-                chatBox.innerHTML += `<p><strong>Vous:</strong> ${userInput}</p>`;
-                chatBox.innerHTML += `<p><strong>Bot (${model}):</strong> Réponse générée...</p>`;
-                document.getElementById("user-input").value = "";
-                chatBox.scrollTop = chatBox.scrollHeight;
+            fetch(API_URL + 'load_model', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ model_name: modelName })
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert(`${modelName} is loaded successfully!`);
+                } else {
+                    response.json().then(data => {
+                        if (data.error.includes('already loaded')) {
+                            unloadModel().then(() => ChangeModel()); // Décharger et recharger
+                        } else {
+                            alert(`Erreur: ${data.error}`);
+                        }
+                    });
+                }
+            })
+            .catch(err => console.error('Erreur lors du chargement du modèle:', err));
+        }
+
+        // Fonction pour décharger un modèle
+        async function unloadModel() {
+            try {
+                const response = await fetch(API_URL + 'unload_model', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                console.log('Résultat unload model:', response.status);
+            } catch (err) {
+                console.error('Erreur lors du déchargement:', err);
             }
         }
-    </script>
 
+        // Fonction pour envoyer un message avec streaming
+        async function sendMessage() {
+            const userInput = document.getElementById('user-input').value.trim();
+            const chatBox = document.getElementById('chat-box');
+            const model = document.getElementById('model').value;
 
-    <script>
-        function ChangeModel() {
-            const menu = document.getElementById("model");
-            const modelName = menu.options[menu.selectedIndex].text
+            if (!userInput) return;
 
-            console.log(modelName);
+            // Ajouter le message utilisateur à l'interface et à l'historique
+            chatBox.innerHTML += `<p><strong>Vous:</strong> ${userInput}</p>`;
+            HISTORY.push({ role: 'user', content: userInput });
+            document.getElementById('user-input').value = ''; // Vider l'input
 
-            fetch("http://localhost:8080/load_model", {
-                method: "POST",
-                headers: {
-                    'content-type': "application/json"
-                },
-                body: JSON.stringify({
-                    model_name: modelName
-                })
-            }).then(response => {
-                response.json(a => {
-                    console.log(a);
-                })
-            });
+            const payload = { messages: HISTORY, stream: true };
 
+            try {
+                const response = await fetch(API_URL + 'generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    chatBox.innerHTML += `<p><strong>Erreur:</strong> ${errorData.error}</p>`;
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                    return;
+                }
+
+                // Gestion du streaming
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder('utf-8');
+                let assistantMessage = '';
+                let messageElement = null;
+
+                // Ajouter un élément temporaire pour la réponse en streaming
+                chatBox.innerHTML += `<p><strong>Bot (${model}):</strong> <span id="streaming-response"></span></p>`;
+                messageElement = document.getElementById('streaming-response');
+
+                await readStream(reader, decoder, (chunk) => {
+                    try {
+                        const jsonChunk = JSON.parse(chunk);
+                        const contentChunk = jsonChunk.response; // Adapté à l'API simulée
+                        assistantMessage += contentChunk;
+                        messageElement.textContent = assistantMessage; // Mise à jour en temps réel
+                        chatBox.scrollTop = chatBox.scrollHeight;
+                    } catch (error) {
+                        console.error('Erreur lors du parsing JSON:', error);
+                    }
+                });
+
+                // Finaliser le message dans l'historique
+                HISTORY.push({ role: 'assistant', content: assistantMessage });
+                messageElement.id = ''; // Supprimer l'ID temporaire
+
+            } catch (error) {
+                chatBox.innerHTML += `<p><strong>Erreur:</strong> Problème de connexion à l'API</p>`;
+                console.error('Erreur lors de la requête:', error);
+            }
+
+            chatBox.scrollTop = chatBox.scrollHeight; // Scroll en bas
+        }
+
+        // Fonction utilitaire pour lire le stream
+        async function readStream(reader, decoder, onChunk) {
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                const chunk = decoder.decode(value, { stream: true });
+                const lines = chunk.split('\n');
+
+                for (const line of lines) {
+                    if (line.trim()) {
+                        onChunk(line + ' ');
+                    }
+                }
+            }
         }
     </script>
 </body>
