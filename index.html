@@ -5,547 +5,112 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RKLLAMA Client</title>
     <link rel="icon" href="logo.jpg">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #4a90e2;
-            --secondary: #2ecc71;
-            --background: #1a2634;
-            --card-bg: #2c3e50;
-            --text: #ecf0f1;
-            --accent: #e74c3c;
-            --hover: #357abd;
-            --shadow: rgba(0, 0, 0, 0.3);
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: 'Roboto', sans-serif;
-            background: linear-gradient(135deg, var(--background), #233042);
-            color: var(--text);
-            min-height: 100vh;
-            padding: 30px;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 1100px;
-            background: var(--card-bg);
-            border-radius: 20px;
-            box-shadow: 0 10px 30px var(--shadow);
-            overflow: hidden;
-            transition: all 0.3s ease;
-        }
-
-        .tabs {
-            display: flex;
-            background: #1f2d3d;
-            border-bottom: 2px solid var(--primary);
-        }
-
-        .tab {
-            flex: 1;
-            padding: 18px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.4s ease;
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .tab:hover {
-            background: rgba(74, 144, 226, 0.1);
-        }
-
-        .tab.active {
-            background: var(--primary);
-            color: white;
-            box-shadow: inset 0 -3px 0 var(--hover);
-        }
-
-        .tab-content {
-            padding: 30px;
-            display: none;
-            animation: slideIn 0.5s ease;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        h2 {
-            color: var(--primary);
-            margin-bottom: 25px;
-            font-size: 1.8em;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-        }
-
-        .chat-container, .download-container, .conversations-container {
-            display: flex;
-            flex-direction: column;
-            gap: 25px;
-        }
-
-        .chat-box, .conversations-list {
-            height: 550px;
-            padding: 20px;
-            overflow-y: auto;
-            border-radius: 15px;
-            background: #233042;
-            box-shadow: inset 0 2px 10px var(--shadow);
-            scrollbar-width: thin;
-            scrollbar-color: var(--primary) var(--card-bg);
-        }
-
-        .message {
-            margin: 12px 0;
-            padding: 15px;
-            border-radius: 10px;
-            background: #34495e;
-            max-width: 85%;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 8px var(--shadow);
-        }
-
-        .message.user {
-            background: var(--primary);
-            align-self: flex-end;
-            margin-left: auto;
-        }
-
-        .message strong {
-            color: var(--secondary);
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-        }
-
-        .input-container {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-        }
-
-        .input-box {
-            flex-grow: 1;
-            padding: 15px 20px;
-            border: none;
-            border-radius: 10px;
-            background: #34495e;
-            color: var(--text);
-            outline: none;
-            transition: all 0.3s ease;
-            font-size: 1em;
-        }
-
-        .input-box:focus {
-            box-shadow: 0 0 8px var(--primary);
-            background: #3d556b;
-        }
-
-        .btn {
-            padding: 15px 25px;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .send-btn {
-            background: var(--secondary);
-            color: white;
-        }
-
-        .send-btn:hover {
-            background: #27ae60;
-            transform: translateY(-2px);
-        }
-
-        .download-btn {
-            background: var(--primary);
-            color: white;
-        }
-
-        .download-btn:hover {
-            background: var(--hover);
-            transform: translateY(-2px);
-        }
-
-        .select {
-            padding: 12px 15px;
-            border-radius: 10px;
-            background: #34495e;
-            color: var(--text);
-            border: none;
-            outline: none;
-            cursor: pointer;
-            width: 100%;
-            max-width: 300px;
-            font-size: 1em;
-            transition: all 0.3s ease;
-        }
-
-        .select:hover {
-            background: #3d556b;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            font-size: 0.95em;
-            font-weight: 500;
-            opacity: 0.9;
-            color: var(--primary);
-        }
-
-        .conversations-list .conversation {
-            padding: 15px;
-            background: #34495e;
-            margin: 8px 0;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 8px var(--shadow);
-        }
-
-        .conversations-list .conversation:hover {
-            background: var(--primary);
-            transform: translateX(5px);
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: #34495e;
-            border-radius: 4px;
-            overflow: hidden;
-            margin-top: 10px;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: var(--secondary);
-            transition: width 0.3s ease;
-        }
-
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(15px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
     <div class="container">
-        <div class="tabs">
-            <div class="tab active" onclick="showTab('chat')">Chat</div>
-            <div class="tab" onclick="showTab('download')">Download Model</div>
-            <div class="tab" onclick="showTab('conversations')">Conversations</div>
-        </div>
-
-        <div id="chat" class="tab-content chat-container active">
-            <h2>RKLLAMA Chat</h2>
-            <select id="model" class="select" onchange="ChangeModel()"></select>
-            <div class="chat-box" id="chat-box">
-                <div class="message"><strong>Bot:</strong> Welcome to RKLLAMA!</div>
+        <div class="header">
+            <div class="logo">
+                <img src="logo.jpg" alt="RKLLAMA Logo">
+                <h1>RKLLAMA Client</h1>
             </div>
-            <div class="input-container">
-                <input type="text" id="user-input" class="input-box" placeholder="Type your message...">
-                <button class="btn send-btn" onclick="sendMessage()">Send</button>
+            <div class="tabs">
+                <div class="tab active" data-tab="chat">Chat</div>
+                <div class="tab" data-tab="download">Download Model</div>
+                <div class="tab" data-tab="conversations">Conversations</div>
             </div>
         </div>
 
-        <div id="download" class="tab-content download-container">
-            <h2>Download Model</h2>
-            <div class="form-group">
-                <label>Model Path (e.g., username/repo/model.rkllm)</label>
-                <input type="text" id="model-path" class="input-box" placeholder="Enter model path">
-            </div>
-            <div class="form-group">
-                <label>Temperature (0 to 2)</label>
-                <input type="number" id="temperature" class="input-box" value="1.0" step="0.1" min="0" max="2">
-            </div>
-            <div class="form-group">
-                <label>System Prompt (optional)</label>
-                <input type="text" id="system-prompt" class="input-box" placeholder="Enter system prompt">
-            </div>
-            <button class="btn download-btn" onclick="downloadModel()">Download & Load</button>
-            <div id="progress-container" style="display: none;">
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progress-fill" style="width: 0%;"></div>
+        <div id="chat" class="tab-content active">
+            <div class="content-layout">
+                <div class="sidebar">
+                    <h2>Available Models</h2>
+                    <select id="model" class="select">
+                        <option value="">Select a model</option>
+                    </select>
+                    <div class="status-indicator">
+                        <div id="connection-status" class="status-dot"></div>
+                        <span id="status-text">Checking connection...</span>
+                    </div>
+                </div>
+                <div class="main-content chat-container">
+                    <div class="chat-box" id="chat-box">
+                        <div class="message">
+                            <strong>RKLLAMA:</strong> Welcome to RKLLAMA! Select a model to start chatting.
+                        </div>
+                    </div>
+                    <div class="input-container">
+                        <input type="text" id="user-input" class="input-box" placeholder="Type your message...">
+                        <button class="btn send-btn" id="send-btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="22" y1="2" x2="11" y2="13"></line>
+                                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                            </svg>
+                            Send
+                        </button>
+                        <div class="loading" id="chat-loading">
+                            <div class="spinner"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div id="conversations" class="tab-content conversations-container">
+        <div id="download" class="tab-content">
+            <h2>Download New Model</h2>
+            <div class="form-group">
+                <label for="model-path">Model Path</label>
+                <input type="text" id="model-path" class="input-box" placeholder="username/repo/model.rkllm">
+                <div class="tooltip">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 6px; vertical-align: middle; cursor: pointer;">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                    </svg>
+                    <span class="tooltip-text">Enter the full path to the model in the format username/repo/model.rkllm</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="temperature">Temperature</label>
+                <input type="range" id="temperature-slider" min="0" max="2" step="0.1" value="1.0">
+                <input type="number" id="temperature" class="input-box" value="1.0" step="0.1" min="0" max="2" style="width: 80px;">
+            </div>
+            <div class="form-group">
+                <label for="system-prompt">System Prompt (optional)</label>
+                <input type="text" id="system-prompt" class="input-box" placeholder="Enter system prompt">
+            </div>
+            <button class="btn download-btn" id="download-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                Download & Load
+            </button>
+            <div class="progress-container" id="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill" style="width: 0%;"></div>
+                </div>
+                <div class="progress-text" id="progress-text">0%</div>
+            </div>
+        </div>
+
+        <div id="conversations" class="tab-content">
             <h2>Saved Conversations</h2>
             <div class="conversations-list" id="conversations-list">
-                <!-- Conversations will be loaded here -->
+                <!-- Empty state -->
+                <div class="empty-state" id="empty-conversations">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    <p>No conversations yet</p>
+                    <p>Start chatting to save your conversations</p>
+                </div>
             </div>
         </div>
     </div>
 
-    <script>
-        const API_URL = 'http://localhost:8080/';
-        let HISTORY = [];
-        let currentConversationId = Date.now();
-
-        // Tab management
-        function showTab(tabId) {
-            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-            document.querySelector(`.tab[onclick="showTab('${tabId}')"]`).classList.add('active');
-            document.getElementById(tabId).classList.add('active');
-        }
-
-        // Load models
-        async function loadModels() {
-            try {
-                const res = await fetch(API_URL + 'models');
-                if (!res.ok) throw new Error('Failed to fetch models');
-                const data = await res.json();
-                const models = document.getElementById('model');
-                models.innerHTML = '<option value="">Select a model</option>';
-                if (data.models) {
-                    data.models.forEach(r => {
-                        models.innerHTML += `<option value="${r}">${r}</option>`;
-                    });
-                }
-            } catch (err) {
-                console.error('Error loading models:', err);
-                document.getElementById('chat-box').innerHTML += 
-                    `<div class="message"><strong>Error:</strong> Could not load models: ${err.message}</div>`;
-            }
-        }
-
-        // Change model
-        async function ChangeModel() {
-            const modelName = document.getElementById('model').value;
-            if (!modelName) return;
-
-            try {
-                const response = await fetch(API_URL + 'load_model', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ model_name: modelName })
-                });
-                const data = await response.json();
-                if (!response.ok) {
-                    if (data.error.includes('already loaded')) {
-                        await unloadModel();
-                        return ChangeModel();
-                    }
-                    throw new Error(data.error);
-                }
-                alert(`${modelName} loaded successfully!`);
-            } catch (err) {
-                alert(`Error loading model: ${err.message}`);
-            }
-        }
-
-        // Unload model
-        async function unloadModel() {
-            await fetch(API_URL + 'unload_model', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
-            });
-        }
-
-        // Send message
-        async function sendMessage() {
-            const userInput = document.getElementById('user-input').value.trim();
-            const chatBox = document.getElementById('chat-box');
-            const model = document.getElementById('model').value;
-
-            if (!userInput || !model) {
-                alert('Please select a model and enter a message');
-                return;
-            }
-
-            chatBox.innerHTML += `<div class="message user"><strong>You:</strong> ${userInput}</div>`;
-            HISTORY.push({ role: 'user', content: userInput });
-            document.getElementById('user-input').value = '';
-
-            const payload = { messages: HISTORY, stream: true };
-
-            try {
-                const response = await fetch(API_URL + 'generate', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                if (!response.ok) throw new Error((await response.json()).error);
-
-                const reader = response.body.getReader();
-                const decoder = new TextDecoder('utf-8');
-                let assistantMessage = '';
-                chatBox.innerHTML += `<div class="message"><strong>Bot (${model}):</strong> <span id="streaming-response"></span></div>`;
-                const messageElement = document.getElementById('streaming-response');
-
-                await readStream(reader, decoder, (chunk) => {
-                    const jsonChunk = JSON.parse(chunk);
-                    assistantMessage += jsonChunk.response;
-                    messageElement.textContent = assistantMessage;
-                    chatBox.scrollTop = chatBox.scrollHeight;
-                });
-
-                HISTORY.push({ role: 'assistant', content: assistantMessage });
-                messageElement.parentElement.innerHTML = `<strong>Bot (${model}):</strong> ${assistantMessage}`;
-                saveConversation();
-            } catch (error) {
-                chatBox.innerHTML += `<div class="message"><strong>Error:</strong> ${error.message}</div>`;
-            }
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
-
-        // Download model with progress
-        async function downloadModel() {
-            const modelPath = document.getElementById('model-path').value.trim();
-            const temperature = document.getElementById('temperature').value;
-            const systemPrompt = document.getElementById('system-prompt').value;
-
-            if (!modelPath) {
-                alert('Please enter a model path');
-                return;
-            }
-
-            const chatBox = document.getElementById('chat-box');
-            const progressContainer = document.getElementById('progress-container');
-            const progressFill = document.getElementById('progress-fill');
-
-            chatBox.innerHTML += `<div class="message"><strong>System:</strong> Downloading ${modelPath}...</div>`;
-            progressContainer.style.display = 'block';
-            progressFill.style.width = '0%';
-
-            try {
-                const pullResponse = await fetch(API_URL + 'pull', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ model: modelPath })
-                });
-
-                if (!pullResponse.ok) throw new Error((await pullResponse.json()).error);
-
-                const reader = pullResponse.body.getReader();
-                const decoder = new TextDecoder();
-
-                await readStream(reader, decoder, (chunk) => {
-                    const percentage = parseFloat(chunk.trim());
-                    if (!isNaN(percentage)) {
-                        progressFill.style.width = `${percentage}%`;
-                        chatBox.lastElementChild.innerHTML = 
-                            `<strong>System:</strong> Downloading ${modelPath}... ${percentage}%`;
-                        chatBox.scrollTop = chatBox.scrollHeight;
-                    }
-                });
-
-                const modelName = modelPath.split('/').pop().replace('.rkllm', '');
-                const loadPayload = { 
-                    model_name: modelName,
-                    temperature: parseFloat(temperature),
-                };
-                if (systemPrompt) loadPayload.system = systemPrompt;
-
-                const loadResponse = await fetch(API_URL + 'load_model', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(loadPayload)
-                });
-
-                if (!loadResponse.ok) throw new Error((await loadResponse.json()).error);
-
-                alert(`${modelName} downloaded and loaded successfully!`);
-                progressContainer.style.display = 'none';
-                location.reload();
-            } catch (error) {
-                chatBox.innerHTML += `<div class="message"><strong>Error:</strong> ${error.message}</div>`;
-                progressContainer.style.display = 'none';
-            }
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
-
-        // Conversation management
-        function saveConversation() {
-            const conversations = JSON.parse(localStorage.getItem('rkllama_conversations') || '{}');
-            conversations[currentConversationId] = {
-                timestamp: new Date().toLocaleString(),
-                messages: HISTORY,
-                model: document.getElementById('model').value
-            };
-            localStorage.setItem('rkllama_conversations', JSON.stringify(conversations));
-            loadConversations();
-        }
-
-        function loadConversations() {
-            const conversations = JSON.parse(localStorage.getItem('rkllama_conversations') || '{}');
-            const list = document.getElementById('conversations-list');
-            list.innerHTML = '';
-            Object.entries(conversations).forEach(([id, conv]) => {
-                list.innerHTML += `
-                    <div class="conversation" onclick="loadConversation('${id}')">
-                        ${conv.timestamp} - <strong>Model:</strong> ${conv.model} (${conv.messages.length} messages)
-                    </div>`;
-            });
-        }
-
-        function loadConversation(id) {
-            const conversations = JSON.parse(localStorage.getItem('rkllama_conversations') || '{}');
-            const conv = conversations[id];
-            if (!conv) return;
-
-            currentConversationId = id;
-            HISTORY = conv.messages;
-            const chatBox = document.getElementById('chat-box');
-            chatBox.innerHTML = '';
-            conv.messages.forEach(msg => {
-                chatBox.innerHTML += `<div class="message ${msg.role === 'user' ? 'user' : ''}">
-                    <strong>${msg.role === 'user' ? 'You' : `Bot (${conv.model})`}:</strong> ${msg.content}
-                </div>`;
-            });
-            document.getElementById('model').value = conv.model;
-            showTab('chat');
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
-
-        // Stream reader
-        async function readStream(reader, decoder, onChunk) {
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-                const chunk = decoder.decode(value, { stream: true });
-                const lines = chunk.split('\n');
-                for (const line of lines) {
-                    if (line.trim()) onChunk(line);
-                }
-            }
-        }
-
-        // Initial load
-        loadModels();
-        loadConversations();
-    </script>
+    <script src="js/script.js"></script>
 </body>
 </html>
