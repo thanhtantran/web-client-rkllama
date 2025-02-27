@@ -54,6 +54,7 @@ app.post('/pull', (req, res) => {
 // Route pour charger un modèle
 app.post('/load_model', (req, res) => {
     const { model_name } = req.body;
+    console.log(req.body)
     if (!model_name) {
         return res.status(400).json({ error: 'Please enter the name of the model to be loaded.' });
     }

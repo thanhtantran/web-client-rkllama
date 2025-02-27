@@ -88,7 +88,8 @@
 <body>
     <div class="chat-container">
         <h2>RKLLAMA Client</h2>
-        <select id="model" class="model-select"></select>
+        <select id="model" class="model-select" onchange="ChangeModel()"></select>
+
         <div class="chat-box" id="chat-box">
             <p><strong>Bot:</strong> Premier message</p>
         </div>
@@ -106,6 +107,7 @@
                 console.log(a)
                 if (!a.models) return;
                 
+
                 a.models.forEach(r => {
                     models.innerHTML += `<option value="${r}">${r}</option>`;
                 })
@@ -118,6 +120,8 @@
             let userInput = document.getElementById("user-input").value;
             let chatBox = document.getElementById("chat-box");
             let model = document.getElementById("model").value;
+
+            fetch("/generate")
             
             if (userInput.trim() !== "") {
                 chatBox.innerHTML += `<p><strong>Vous:</strong> ${userInput}</p>`;
@@ -125,6 +129,31 @@
                 document.getElementById("user-input").value = "";
                 chatBox.scrollTop = chatBox.scrollHeight;
             }
+        }
+    </script>
+
+
+    <script>
+        function ChangeModel() {
+            const menu = document.getElementById("model");
+            const modelName = menu.options[menu.selectedIndex].text
+
+            console.log(modelName);
+
+            fetch("http://localhost:8080/load_model", {
+                method: "POST",
+                headers: {
+                    'content-type': "application/json"
+                },
+                body: JSON.stringify({
+                    model_name: modelName
+                })
+            }).then(response => {
+                response.json(a => {
+                    console.log(a);
+                })
+            });
+
         }
     </script>
 </body>
