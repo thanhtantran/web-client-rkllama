@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# Colors for output
+# Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
 # Function to check if a command exists
 command_exists() {
@@ -51,7 +51,7 @@ cd "$WEB_CLIENT_DIR" || {
 }
 
 # Default port
-PORT=8080
+PORT=3000
 
 # Check if port is available, increment if in use
 while lsof -i :$PORT >/dev/null 2>&1; do
@@ -80,6 +80,6 @@ fi
 echo -e "${GREEN}rkllama Web Server is now running at http://localhost:$PORT${NC}"
 echo -e "${GREEN}Port used: $PORT${NC}"
 
-# Optional: Keep the script running to allow stopping the server gracefully
+
 echo -e "${BLUE}Press Ctrl+C to stop the server.${NC}"
 wait $SERVE_PID

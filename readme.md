@@ -27,7 +27,7 @@ Le rkllama Web Client offre une interface web conviviale pour rkllama, optimisé
 ## Prérequis
 
 - Matériel compatible avec les NPUs Rockchip (ex. : RK3588 ou RK3576).
-- rkllama Core installé et fonctionnel.
+- rkllama installé et fonctionnel.
 - Système Linux (ce guide cible Linux, ex. : Ubuntu/Debian).
 - Git (optionnel).
 

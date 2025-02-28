@@ -3,7 +3,7 @@ let HISTORY = [];
 let currentConversationId = Date.now();
 let requestInProgress = false;
 
-// DOM Elements
+// Elements
 const tabs = document.querySelectorAll('.tab');
 const tabContents = document.querySelectorAll('.tab-content');
 const modelSelect = document.getElementById('model');
@@ -127,7 +127,7 @@ async function changeModel() {
         }
 
         addMessage('system', `Model "${modelName}" loaded successfully!`);
-        HISTORY = []; // Reset history when changing models
+        HISTORY = [];
         currentConversationId = Date.now();
     } catch (err) {
         addMessage('error', `Error loading model: ${err.message}`);
@@ -147,7 +147,159 @@ async function unloadModel() {
     }
 }
 
+let currentCodeBlock = {
+    isInCodeBlock: false,
+    language: null,
+    content: '',
+    element: null
+};
+
+function processStreamContent(contentSpan, newContent) {
+    contentSpan.innerHTML = '';
+
+    const lines = newContent.split('\n');
+    let formattedContent = document.createDocumentFragment();
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+
+        if (line.startsWith('```') && !currentCodeBlock.isInCodeBlock) {
+            currentCodeBlock.isInCodeBlock = true;
+            currentCodeBlock.language = line.slice(3).trim();
+            currentCodeBlock.content = '';
+
+            const preElement = document.createElement('pre');
+            preElement.className = 'code-block';
+
+            const codeElement = document.createElement('code');
+            if (currentCodeBlock.language) {
+                codeElement.className = `language-${currentCodeBlock.language}`;
+            }
+
+            preElement.appendChild(codeElement);
+            formattedContent.appendChild(preElement);
+
+            currentCodeBlock.element = codeElement;
+            continue;
+        }
+
+        if (line.startsWith('```') && currentCodeBlock.isInCodeBlock) {
+            currentCodeBlock.isInCodeBlock = false;
+
+            if (window.hljs && currentCodeBlock.language) {
+                try {
+                    currentCodeBlock.element.innerHTML = hljs.highlight(
+                        currentCodeBlock.content,
+                        { language: currentCodeBlock.language || 'plaintext' }
+                    ).value;
+                } catch (e) {
+                    currentCodeBlock.element.textContent = currentCodeBlock.content;
+                }
+            } else {
+                currentCodeBlock.element.textContent = currentCodeBlock.content;
+            }
+
+            currentCodeBlock.element = null;
+            continue;
+        }
+
+        if (currentCodeBlock.isInCodeBlock) {
+            currentCodeBlock.content += line + '\n';
+
+            currentCodeBlock.element.textContent = currentCodeBlock.content;
+            continue;
+        }
+
+        const textNode = document.createElement('div');
+        textNode.textContent = line;
+        formattedContent.appendChild(textNode);
+    }
+
+    contentSpan.appendChild(formattedContent);
+}
+
+function processContent(container, content) {
+    // Réinitialiser l'état
+    currentCodeBlock = {
+        isInCodeBlock: false,
+        language: null,
+        content: '',
+        element: null
+    };
+
+    // Vider le conteneur
+    while (container.firstChild) {
+        container.removeChild(container.firstChild);
+    }
+
+    // Analyser le texte ligne par ligne
+    const lines = content.split('\n');
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+
+        // Détection du début d'un bloc de code
+        if (line.startsWith('```') && !currentCodeBlock.isInCodeBlock) {
+            currentCodeBlock.isInCodeBlock = true;
+            currentCodeBlock.language = line.slice(3).trim();
+            currentCodeBlock.content = '';
+
+            // Créer un conteneur de bloc de code
+            const preElement = document.createElement('pre');
+            preElement.className = 'code-block';
+
+            const codeElement = document.createElement('code');
+            if (currentCodeBlock.language) {
+                codeElement.className = `language-${currentCodeBlock.language}`;
+            }
+
+            preElement.appendChild(codeElement);
+            container.appendChild(preElement);
+
+            currentCodeBlock.element = codeElement;
+            continue;
+        }
+
+        // Détection de la fin d'un bloc de code
+        if (line.startsWith('```') && currentCodeBlock.isInCodeBlock) {
+            currentCodeBlock.isInCodeBlock = false;
+
+            // Appliquer la coloration syntaxique
+            if (window.hljs && currentCodeBlock.language) {
+                try {
+                    currentCodeBlock.element.innerHTML = hljs.highlight(
+                        currentCodeBlock.content,
+                        { language: currentCodeBlock.language || 'plaintext' }
+                    ).value;
+                } catch (e) {
+                    currentCodeBlock.element.textContent = currentCodeBlock.content;
+                }
+            } else {
+                currentCodeBlock.element.textContent = currentCodeBlock.content;
+            }
+
+            currentCodeBlock.element = null;
+            continue;
+        }
+
+        // À l'intérieur d'un bloc de code
+        if (currentCodeBlock.isInCodeBlock) {
+            currentCodeBlock.content += line + '\n';
+            currentCodeBlock.element.textContent = currentCodeBlock.content;
+            continue;
+        }
+
+        // Texte normal (hors bloc de code)
+        const textNode = document.createElement('div');
+        textNode.textContent = line;
+        container.appendChild(textNode);
+    }
+
+    return container;
+}
+
 function addMessage(type, content, authorOverride = null) {
+    console.log(type, content)
     const messageType = type === 'user' ? 'user' :
         type === 'error' ? 'error' :
             type === 'system' ? 'system' : '';
@@ -158,9 +310,27 @@ function addMessage(type, content, authorOverride = null) {
                 type === 'system' ? 'System' :
                     `RKLLAMA${modelSelect.value ? ` (${modelSelect.value})` : ''}`);
 
+    // Créer la div du message
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${messageType}`;
-    messageDiv.innerHTML = `<strong>${author}:</strong> ${content}`;
+
+    // Ajouter l'auteur
+    const authorSpan = document.createElement('strong');
+    authorSpan.textContent = author + ': ';
+    messageDiv.appendChild(authorSpan);
+
+    // Traiter le contenu avec coloration syntaxique si c'est un message non-utilisateur
+    if (type !== 'user') {
+        const contentContainer = document.createElement('div');
+        contentContainer.className = 'message-content';
+        processContent(contentContainer, content);
+        messageDiv.appendChild(contentContainer);
+    } else {
+        // Pour les messages utilisateur, juste afficher le texte
+        const contentSpan = document.createElement('span');
+        contentSpan.textContent = content;
+        messageDiv.appendChild(contentSpan);
+    }
 
     chatBox.appendChild(messageDiv);
     chatBox.scrollTop = chatBox.scrollHeight;
@@ -168,6 +338,7 @@ function addMessage(type, content, authorOverride = null) {
     return messageDiv;
 }
 
+// Fonction sendMessage mise à jour avec reader correctement défini
 async function sendMessage() {
     // Prevent double sending
     if (requestInProgress) return;
@@ -202,30 +373,60 @@ async function sendMessage() {
             throw new Error(errorData.error || 'Failed to generate response');
         }
 
-        // Create placeholder for streaming response
-        const messageDiv = addMessage('assistant', '');
-        const contentSpan = document.createElement('span');
-        messageDiv.appendChild(contentSpan);
+        // Create message container
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message';
 
-        // Stream response
+        // Add author
+        const authorSpan = document.createElement('strong');
+        authorSpan.textContent = `RKLLAMA (${selectedModel}): `;
+        messageDiv.appendChild(authorSpan);
+
+        // Add content container for streaming
+        const contentContainer = document.createElement('div');
+        contentContainer.className = 'message-content';
+        messageDiv.appendChild(contentContainer);
+
+        chatBox.appendChild(messageDiv);
+
+        // Stream response - définir reader ici
         const reader = response.body.getReader();
         const decoder = new TextDecoder('utf-8');
         let assistantMessage = '';
 
-        await readStream(reader, decoder, (chunk) => {
-            try {
-                const jsonChunk = JSON.parse(chunk);
-                console.log(jsonChunk)
-                assistantMessage += jsonChunk.choices[0].content;
-                contentSpan.textContent = assistantMessage;
-                chatBox.scrollTop = chatBox.scrollHeight;
-            } catch (e) {
-                console.error('Error parsing chunk:', e);
-            }
-        });
+        // Fonction pour lire le stream
+        async function readStream() {
+            let done = false;
 
-        // Update message with final content
-        messageDiv.innerHTML = `<strong>RKLLAMA (${selectedModel}):</strong> ${assistantMessage}`;
+            while (!done) {
+                const { value, done: doneReading } = await reader.read();
+                done = doneReading;
+
+                if (done) break;
+
+                const chunk = decoder.decode(value, { stream: true });
+                try {
+                    const lines = chunk.split('\n');
+
+                    for (const line of lines) {
+                        if (!line.trim()) continue;
+
+                        const jsonChunk = JSON.parse(line);
+                        console.log(jsonChunk);
+
+                        if (jsonChunk.choices && jsonChunk.choices[0].content) {
+                            assistantMessage += jsonChunk.choices[0].content;
+                            processContent(contentContainer, assistantMessage);
+                            chatBox.scrollTop = chatBox.scrollHeight;
+                        }
+                    }
+                } catch (e) {
+                    console.error('Error parsing chunk:', e);
+                }
+            }
+        }
+
+        await readStream();
 
         // Add to history and save conversation
         HISTORY.push({ role: 'assistant', content: assistantMessage });
