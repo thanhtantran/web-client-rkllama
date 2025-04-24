@@ -1,4 +1,7 @@
-const API_URL = 'http://localhost:8080/';
+// Tự động xác định URL API dựa trên host hiện tại
+const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://127.0.0.1:8080/'
+  : `http://${window.location.hostname.replace(/:\d+$/, '')}:8080/`;
 let HISTORY = [];
 let currentConversationId = Date.now();
 let requestInProgress = false;
@@ -60,17 +63,29 @@ function showTab(tabId) {
 
 async function checkConnection() {
     try {
-        const response = await fetch(API_URL + 'models', { signal: AbortSignal.timeout(5000) });
-        if (response.ok) {
-            connectionStatus.classList.add('connected');
-            statusText.textContent = 'Connected to API';
-            return true;
-        } else {
-            throw new Error('API responded with error');
-        }
+        console.log('Attempting connection to:', API_URL + 'models');
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+        
+        const response = await fetch(API_URL + 'models', { 
+            signal: controller.signal,
+            headers: {'Accept': 'application/json'},
+            mode: 'cors' // Try different modes: 'cors', 'no-cors', 'same-origin'
+        });
+        
+        clearTimeout(timeoutId);
+        console.log('Connection successful, status:', response.status);
+        
+        connectionStatus.classList.add('connected');
+        statusText.textContent = 'Connected to API';
+        return true;
     } catch (err) {
+        console.error('Connection error type:', err.name);
+        console.error('Connection error message:', err.message);
+        console.error('Full error:', err);
+        
         connectionStatus.classList.remove('connected');
-        statusText.textContent = 'API connection failed';
+        statusText.textContent = `API connection failed: ${err.name}`;
         return false;
     }
 }
